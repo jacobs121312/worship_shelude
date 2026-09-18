@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Графік служінь</title>
+<style>
+:root {
+  --bg: #F5F5F7;
+  --surface: #FFFFFF;
+  --surface-2: #F0F0F2;
+  --ink: #1D1D1F;
+  --ink-soft: #6E6E73;
+  --blue: #0071E3;
+  --blue-hover: #0068D1;
+  --blue-tint: rgba(0,113,227,0.1);
+  --red: #FF3B30;
+  --red-tint: rgba(255,59,48,0.08);
+  --line: rgba(0,0,0,0.08);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1C1C1E; --surface: #2C2C2E; --surface-2: #3A3A3C; --ink: #F5F5F7; --ink-soft: #98989D;
+    --blue: #0A84FF; --blue-hover: #409CFF; --blue-tint: rgba(10,132,255,0.22);
+    --red: #FF453A; --red-tint: rgba(255,69,58,0.16); --line: rgba(255,255,255,0.12);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.35); --shadow-md: 0 2px 10px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.3);
+  }
+}
+* { box-sizing: border-box; }
+html, body { background: var(--bg); margin:0; padding:0; }
+body { color: var(--ink); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+.wtp-page { padding: 2rem; max-width: 920px; margin: 0 auto; }
+.wtp-loading { display:flex; align-items:center; justify-content:center; min-height: 200px; color: var(--ink-soft); }
+.wtp-header { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+.wtp-header h1 { font-weight: 700; font-size: 2rem; margin: 0; letter-spacing: -0.02em; }
+.wtp-subtitle { margin: .3rem 0 0; color: var(--ink-soft); font-size: 1rem; }
+.wtp-quickstats { display: flex; gap: .75rem; }
+.wtp-quickstat { display:flex; flex-direction:column; align-items: center; background: var(--surface); border-radius: 14px; padding: .6rem 1.1rem; box-shadow: var(--shadow-sm); }
+.wtp-qs-num { font-size: 1.5rem; font-weight: 700; color: var(--blue); line-height:1.2; letter-spacing: -0.01em; }
+.wtp-qs-label { font-size: .72rem; color: var(--ink-soft); margin-top: .15rem; white-space: nowrap; }
+.wtp-banner { background: var(--red-tint); color: var(--red); padding: .7rem 1rem; border-radius: 12px; font-size: .88rem; margin-bottom: 1rem; }
+.wtp-tabs { display: flex; gap: 2px; background: var(--surface-2); border-radius: 12px; padding: 3px; margin-bottom: 1.5rem; }
+.wtp-tab { flex: 1; background: none; border: none; cursor: pointer; font-family: var(--font-sans); font-size: .9rem; color: var(--ink-soft); padding: .5rem 0; border-radius: 9px; }
+.wtp-tab.active { color: var(--ink); font-weight: 600; background: var(--surface); box-shadow: var(--shadow-sm); }
+.wtp-toolbar { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; margin-bottom: 1.5rem; }
+.wtp-inline-add { display: flex; gap: .5rem; align-items: center; }
+.wtp-btn { font-family: var(--font-sans); font-size: .87rem; font-weight: 600; background: var(--surface-2); color: var(--ink); border: none; padding: .55rem 1.05rem; border-radius: 980px; cursor: pointer; white-space: nowrap; }
+.wtp-btn:hover { background: #E5E5EA; }
+.wtp-btn-primary { background: var(--blue); color: #fff; }
+.wtp-btn-primary:hover { background: var(--blue-hover); }
+.wtp-btn-active { background: var(--blue-tint); color: var(--blue); }
+.wtp-link-btn { background:none; border:none; color: var(--blue); font-size:.82rem; cursor:pointer; padding:0; text-decoration: underline; }
+.wtp-input { font-family: var(--font-sans); font-size: .87rem; padding: .55rem .8rem; border: none; border-radius: 10px; background: var(--surface-2); color: var(--ink); }
+.wtp-input:focus { outline: none; box-shadow: 0 0 0 3px var(--blue-tint); background: var(--surface); }
+.wtp-hint { color: var(--ink-soft); font-size: .9rem; }
+.wtp-service-list { display: flex; flex-direction: column; gap: 1rem; }
+.wtp-card { background: var(--surface); border-radius: 18px; padding: 1.25rem 1.4rem; box-shadow: var(--shadow-md); }
+.wtp-card.past { opacity: .7; box-shadow: var(--shadow-sm); }
+.wtp-card-head { display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--line); padding-bottom: 1rem; margin-bottom: .75rem; flex-wrap: wrap; }
+.wtp-date-badge { flex-shrink: 0; width: 50px; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; align-items: center; background: var(--surface); }
+.wtp-date-dow { display: block; width: 100%; text-align: center; background: var(--red); color: #fff; font-size: .62rem; font-weight: 700; letter-spacing: .03em; padding: .2rem 0; }
+.wtp-date-day { font-size: 1.3rem; font-weight: 700; line-height: 1.5; }
+.wtp-card-head-text { flex: 1; min-width: 160px; }
+.wtp-date-full { font-size: .95rem; font-weight: 600; margin-bottom: .15rem; }
+.wtp-note-input { width: 100%; border: none; background: transparent; font-size: .82rem; color: var(--ink-soft); font-family: var(--font-sans); padding: .1rem 0; }
+.wtp-note-input:focus { outline: none; color: var(--ink); }
+.wtp-public-note { font-size: .78rem; color: var(--ink-soft); font-style: italic; margin-top: .15rem; }
+.wtp-position-list { display: flex; flex-direction: column; }
+.wtp-position-row { display: flex; align-items: center; gap: .6rem; padding: .55rem .4rem; border-radius: 10px; flex-wrap: wrap; }
+.wtp-position-row.conflict .wtp-select { box-shadow: 0 0 0 1.5px var(--red) inset; background: var(--red-tint); }
+.wtp-position-name { flex: 0 0 40%; font-size: .87rem; color: var(--ink); }
+.wtp-conflict-note { font-size: .7rem; color: var(--red); white-space: nowrap; }
+.wtp-select { font-family: var(--font-sans); font-size: .85rem; padding: .4rem .55rem; border: none; border-radius: 8px; background: var(--surface-2); color: var(--ink); flex: 1; min-width: 0; }
+.wtp-select:focus { outline: none; box-shadow: 0 0 0 3px var(--blue-tint); }
+.wtp-select-add { flex: 0 0 auto; max-width: 240px; color: var(--ink-soft); }
+.wtp-add-position { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-top: .5rem; padding-top: .85rem; border-top: 1px solid var(--line); }
+.wtp-add-position .wtp-input { flex: 1; min-width: 160px; }
+.wtp-icon-btn { background: none; border: none; cursor: pointer; font-size: 1.2rem; color: var(--ink-soft); line-height: 1; width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; display:inline-flex; align-items:center; justify-content:center; }
+.wtp-icon-btn:hover { color: var(--red); background: var(--red-tint); }
+.wtp-dup-btn { background: var(--surface-2); border: none; border-radius: 980px; cursor: pointer; font-size: .72rem; font-weight: 600; color: var(--ink-soft); padding: .35rem .65rem; flex-shrink: 0; white-space: nowrap; }
+.wtp-dup-btn:hover { background: var(--blue-tint); color: var(--blue); }
+.wtp-cal-links { display:inline-flex; gap:.3rem; flex-wrap: wrap; }
+.wtp-cal-link { font-size:.7rem; font-weight:600; color: var(--blue); text-decoration:none; padding:.25rem .55rem; border-radius:980px; background: var(--blue-tint); white-space:nowrap; }
+.wtp-cal-link:hover { background: var(--blue); color:#fff; }
+.wtp-two-col { display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.75rem; }
+.wtp-h2 { font-size: 1.15rem; font-weight: 700; margin: 0 0 .75rem; letter-spacing: -0.01em; }
+.wtp-add-person, .wtp-add-role { background: var(--surface); border-radius: 16px; padding: 1.1rem; margin-bottom: 1rem; display: flex; flex-direction: column; gap: .65rem; box-shadow: var(--shadow-sm); }
+.wtp-add-role { flex-direction: row; align-items: center; }
+.wtp-add-role .wtp-input { flex: 1; }
+.wtp-chip-row { display: flex; flex-wrap: wrap; gap: .4rem; }
+.wtp-chip { font-family: var(--font-sans); font-size: .75rem; padding: .3rem .7rem; border-radius: 999px; border: none; background: var(--surface-2); color: var(--ink-soft); cursor: pointer; }
+.wtp-chip.on { background: var(--blue); color: #fff; }
+.wtp-chip-sm { font-size: .7rem; padding: .22rem .55rem; }
+.wtp-chip-static { cursor: default; background: var(--surface-2); color: var(--ink-soft); }
+.wtp-person-list, .wtp-role-list { list-style: none; margin: 0; padding: 0; }
+.wtp-person-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; padding: .9rem 0; border-bottom: 1px solid var(--line); }
+.wtp-person-row:last-child { border-bottom: none; }
+.wtp-person-row.inactive { opacity: .5; }
+.wtp-person-main { display: flex; flex-direction: column; gap: .45rem; flex: 1; }
+.wtp-person-name { font-weight: 600; }
+.wtp-person-actions { display: flex; align-items: center; gap: .6rem; white-space: nowrap; }
+.wtp-toggle-label { font-size: .75rem; color: var(--ink-soft); display: flex; align-items: center; gap: .35rem; }
+.wtp-role-row { display: flex; justify-content: space-between; align-items: center; gap: .5rem; padding: .5rem 0; border-bottom: 1px solid var(--line); }
+.wtp-role-row:last-child { border-bottom: none; }
+.wtp-role-name-input { flex: 1; border: none; background: transparent; font-family: var(--font-sans); font-size: .88rem; color: var(--ink); padding: .3rem .4rem; border-radius: 8px; }
+.wtp-role-name-input:focus { outline: none; background: var(--surface-2); }
+.wtp-load-list { display: flex; flex-direction: column; gap: .85rem; }
+.wtp-load-row { background: var(--surface); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); }
+.wtp-load-row.inactive { opacity: .5; }
+.wtp-load-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: .5rem; }
+.wtp-load-count { font-weight: 700; color: var(--blue); }
+.wtp-bar-track { height: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden; margin-bottom: .6rem; }
+.wtp-bar-fill { height: 100%; background: var(--blue); border-radius: 3px; }
+.wtp-load-meta { display: flex; gap: 1rem; flex-wrap: wrap; font-size: .78rem; color: var(--ink-soft); margin-bottom: .3rem; }
+.wtp-upcoming-details { margin-top:.6rem; }
+.wtp-upcoming-details summary { cursor:pointer; font-size:.78rem; color: var(--blue); font-weight:600; }
+.wtp-upcoming-list { list-style:none; margin:.5rem 0 0; padding:0; display:flex; flex-direction:column; gap:.45rem; }
+.wtp-upcoming-item { display:flex; justify-content:space-between; align-items:center; gap:.5rem; font-size:.82rem; flex-wrap:wrap; }
+.wtp-my-select-wrap { display:flex; align-items:center; gap:.5rem; margin: 1rem 0 1.25rem; flex-wrap: wrap; }
+.wtp-my-select { max-width: 260px; }
+.wtp-public-stats { margin-bottom: 1.25rem; }
+.wtp-coserve { font-size:.8rem; color: var(--ink-soft); margin: .5rem 0 0; padding: 0 .2rem; }
+.wtp-footer { margin-top: 2rem; text-align: center; }
+@media (max-width: 640px) {
+  .wtp-page { padding: 1.25rem; }
+  .wtp-two-col { grid-template-columns: 1fr; }
+  .wtp-header { flex-direction: column; align-items: flex-start; }
+  .wtp-position-name { flex-basis: 100%; }
+  .wtp-select { flex-basis: 100%; }
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="module">
+/* =====================================================================
+   НАЛАШТУВАННЯ FIREBASE — вставте сюди свої значення з консолі Firebase
+   (Project settings → General → Your apps → SDK setup and configuration)
+   Ці значення НЕ секретні, їх можна безпечно тримати у відкритому коді.
+   ===================================================================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyCrw8ZLy2TJEtxsa_169RomyF4sMa5PPsU",
+  authDomain: "worship-planner-a7172.firebaseapp.com",
+  projectId: "worship-planner-a7172",
+  storageBucket: "worship-planner-a7172.firebasestorage.app",
+  messagingSenderId: "704864434604",
+  appId: "1:704864434604:web:837aae43735fb2ead12209"
+};
+/* ===================================================================== */
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const fbApp = initializeApp(firebaseConfig);
+const db = getFirestore(fbApp);
+const stateDocRef = doc(db, "app", "state");
+
+/* ================= constants ================= */
+const DEFAULT_ROLE_NAMES = [
+  "Ведучий/ведуча прославлення","Вокал 2","Вокал 3","Гітара акустична",
+  "Гітара електрична","Бас-гітара","Барабани","Клавіші","Звукооператор"
+];
+const MONTHS_LONG = ["січня","лютого","березня","квітня","травня","червня","липня","серпня","вересня","жовтня","листопада","грудня"];
+const MONTHS_SHORT = ["січ","лют","бер","кві","тра","чер","лип","сер","вер","жов","лис","гру"];
+
+/* ================= helpers ================= */
+let idSeed = 0;
+function uid(prefix){ idSeed += 1; return prefix+'-'+Date.now().toString(36)+'-'+idSeed+'-'+Math.random().toString(36).slice(2,6); }
+function toISO(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function parseISO(s){ const p=s.split('-').map(Number); return new Date(p[0],p[1]-1,p[2]); }
+function formatLong(s){ const d=parseISO(s); return d.getDate()+' '+MONTHS_LONG[d.getMonth()]+' '+d.getFullYear(); }
+function formatShort(s){ const d=parseISO(s); return { day:d.getDate(), month:MONTHS_SHORT[d.getMonth()], year:d.getFullYear() }; }
+function nextSundayAfter(dateObj){ const d=new Date(dateObj.getFullYear(),dateObj.getMonth(),dateObj.getDate()); d.setDate(d.getDate()+(d.getDay()===0?7:7-d.getDay())); return d; }
+function todayISO(){ return toISO(new Date()); }
+function declineSluzhinnia(n){
+  const m10=n%10, m100=n%100;
+  if (m10===1 && m100!==11) return 'служіння';
+  if ((m10===2||m10===3||m10===4) && !(m100===12||m100===13||m100===14)) return 'служіння';
+  return 'служінь';
+}
+
+function buildDefaultState(){
+  const roles = DEFAULT_ROLE_NAMES.map(name => ({id: uid('role'), name}));
+  const services = [];
+  let cursor = new Date();
+  for (let i=0;i<4;i++){
+    cursor = i===0 ? nextSundayAfter(new Date()) : nextSundayAfter(cursor);
+    services.push({ id: uid('svc'), date: toISO(cursor), note: '', positions: roles.map(r => ({id: uid('pos'), roleId: r.id, personId: null})) });
+  }
+  return { roles, people: [], services, serviceTime: '09:30' };
+}
+function normalizeState(raw){
+  if (!raw || !Array.isArray(raw.services) || !Array.isArray(raw.roles)) return buildDefaultState();
+  const roleIds = new Set(raw.roles.map(r => r.id));
+  const services = raw.services.map(sv => ({
+    id: sv.id || uid('svc'), date: sv.date, note: sv.note || '',
+    positions: Array.isArray(sv.positions) ? sv.positions.filter(p => roleIds.has(p.roleId)).map(p => ({id: p.id || uid('pos'), roleId: p.roleId, personId: p.personId || null})) : []
+  }));
+  const people = Array.isArray(raw.people) ? raw.people.map(p => ({id: p.id || uid('person'), name: p.name || '', roles: Array.isArray(p.roles) ? p.roles : [], active: p.active !== false})) : [];
+  return { roles: raw.roles, people, services, serviceTime: raw.serviceTime || '09:30' };
+}
+
+function buildEventTimes(dateISO, timeStr, durationHours){
+  const d = parseISO(dateISO);
+  const hm = (timeStr||'09:30').split(':').map(Number);
+  const start = new Date(d.getFullYear(), d.getMonth(), d.getDate(), hm[0], hm[1], 0, 0);
+  const end = new Date(start.getTime());
+  end.setHours(end.getHours() + (durationHours||2));
+  return { start, end };
+}
+function fmtUTC(d){ return d.toISOString().replace(/[-:]/g,'').split('.')[0]+'Z'; }
+function calendarLinks(dateISO, timeStr, durationHours, title, description){
+  const t = buildEventTimes(dateISO, timeStr, durationHours);
+  const google = 'https://calendar.google.com/calendar/render?' + new URLSearchParams({action:'TEMPLATE', text:title, dates: fmtUTC(t.start)+'/'+fmtUTC(t.end), details: description||''}).toString();
+  const outlook = 'https://outlook.live.com/calendar/0/deeplink/compose?' + new URLSearchParams({path:'/calendar/action/compose', rru:'addevent', subject:title, startdt:t.start.toISOString(), enddt:t.end.toISOString(), body: description||''}).toString();
+  return { google, outlook };
+}
+
+function h(tag, attrs, children){
+  const node = document.createElement(tag);
+  attrs = attrs || {};
+  Object.keys(attrs).forEach(key => {
+    const val = attrs[key];
+    if (val === undefined || val === null || val === false) return;
+    if (key === 'class') node.className = val;
+    else if (key === 'text') node.textContent = val;
+    else if (key === 'value') node.value = val;
+    else if (key === 'checked') node.checked = !!val;
+    else if (key.indexOf('on') === 0 && typeof val === 'function') node.addEventListener(key.slice(2).toLowerCase(), val);
+    else node.setAttribute(key, val);
+  });
+  const kids = children == null ? [] : (Array.isArray(children) ? children : [children]);
+  kids.forEach(c => {
+    if (c === null || c === undefined || c === false) return;
+    node.appendChild((typeof c === 'string' || typeof c === 'number') ? document.createTextNode(String(c)) : c);
+  });
+  return node;
+}
+
+/* ================= state ================= */
+let state = buildDefaultState();
+let loaded = false;
+let canEdit = false;
+let editCode = '';
+try { editCode = localStorage.getItem('wtp-editcode') || ''; } catch(e){}
+let uiTab = 'schedule';
+try { uiTab = sessionStorage.getItem('wtp-tab') || 'schedule'; } catch(e){}
+let loadSortKey = 'total';
+let myPersonId = '';
+try { myPersonId = localStorage.getItem('wtp-my-id') || ''; } catch(e){}
+
+function sortedServices(){ return state.services.slice().sort((a,b) => a.date < b.date ? -1 : (a.date > b.date ? 1 : 0)); }
+function roleName(id){ const r = state.roles.find(x => x.id===id); return r ? r.name : '(видалена роль)'; }
+function computeStats(){
+  const today = todayISO();
+  return state.people.map(p => {
+    let past=0, upcoming=0, lastDate=null; const byRole={}; const upcomingList=[];
+    state.services.forEach(sv => {
+      sv.positions.forEach(pos => {
+        if (pos.personId !== p.id) return;
+        if (sv.date < today) past++; else { upcoming++; upcomingList.push({date: sv.date, roleId: pos.roleId}); }
+        byRole[pos.roleId] = (byRole[pos.roleId]||0)+1;
+        if (!lastDate || sv.date > lastDate) lastDate = sv.date;
+      });
+    });
+    upcomingList.sort((a,b) => a.date < b.date ? -1 : (a.date > b.date ? 1 : 0));
+    return Object.assign({}, p, {past, upcoming, total: past+upcoming, byRole, lastDate, upcomingList});
+  });
+}
+
+/* ================= persistence (Firestore) ================= */
+function persist(newState){
+  state = newState;
+  render();
+  setDoc(stateDocRef, { editCode: editCode, payload: newState }).catch(err => {
+    console.error('Save failed', err);
+    alert('Не вдалося зберегти зміни — код доступу міг застаріти. Спробуйте увійти ще раз.');
+    canEdit = false; editCode = '';
+    try { localStorage.removeItem('wtp-editcode'); } catch(e){}
+    render();
+  });
+}
+function tryUnlock(code){
+  return setDoc(stateDocRef, { editCode: code, payload: state }, { merge: true })
+    .then(() => {
+      editCode = code; canEdit = true;
+      try { localStorage.setItem('wtp-editcode', code); } catch(e){}
+      render();
+      return true;
+    })
+    .catch(() => { alert('Невірний код доступу.'); return false; });
+}
+function lockAgain(){
+  canEdit = false; editCode = '';
+  try { localStorage.removeItem('wtp-editcode'); } catch(e){}
+  render();
+}
+
+onSnapshot(stateDocRef, snap => {
+  if (snap.exists()) {
+    const data = snap.data();
+    if (data && data.payload) state = normalizeState(data.payload);
+  }
+  loaded = true;
+  render();
+}, err => {
+  console.error('Listen failed', err);
+  loaded = true;
+  render();
+});
+
+if (editCode) tryUnlock(editCode);
+
+/* ================= mutations ================= */
+function withState(mut){ const next = Object.assign({}, state); mut(next); persist(next); }
+function addService(dateObj){
+  const date = toISO(dateObj);
+  if (state.services.some(s => s.date===date)) return;
+  const sorted = sortedServices();
+  const template = sorted.length ? sorted[sorted.length-1].positions : state.roles.map(r => ({roleId: r.id}));
+  const positions = template.map(p => ({id: uid('pos'), roleId: p.roleId, personId: null}));
+  withState(next => { next.services = state.services.concat([{id: uid('svc'), date, note:'', positions}]); });
+}
+function addNextSunday(){
+  const sorted = sortedServices();
+  const last = sorted.length ? parseISO(sorted[sorted.length-1].date) : new Date();
+  addService(nextSundayAfter(last));
+}
+function removeService(id){ withState(next => { next.services = state.services.filter(s => s.id!==id); }); }
+function setNote(id, note){ withState(next => { next.services = state.services.map(s => s.id===id ? Object.assign({},s,{note}) : s); }); }
+function setAssignment(serviceId, positionId, personId){
+  withState(next => { next.services = state.services.map(sv => sv.id!==serviceId ? sv : Object.assign({}, sv, {positions: sv.positions.map(p => p.id===positionId ? Object.assign({},p,{personId: personId||null}) : p)})); });
+}
+function addExistingPosition(serviceId, roleId){
+  withState(next => { next.services = state.services.map(sv => sv.id!==serviceId ? sv : Object.assign({}, sv, {positions: sv.positions.concat([{id: uid('pos'), roleId, personId:null}])})); });
+}
+function duplicatePosition(serviceId, positionId){
+  withState(next => { next.services = state.services.map(sv => {
+    if (sv.id!==serviceId) return sv;
+    const idx = sv.positions.findIndex(p => p.id===positionId);
+    if (idx===-1) return sv;
+    const copy = {id: uid('pos'), roleId: sv.positions[idx].roleId, personId:null};
+    const positions = sv.positions.slice(); positions.splice(idx+1,0,copy);
+    return Object.assign({}, sv, {positions});
+  }); });
+}
+function addCustomPosition(serviceId, name){
+  if (!name || !name.trim()) return;
+  const role = {id: uid('role'), name: name.trim()};
+  withState(next => {
+    next.roles = state.roles.concat([role]);
+    next.services = state.services.map(sv => sv.id!==serviceId ? sv : Object.assign({}, sv, {positions: sv.positions.concat([{id: uid('pos'), roleId: role.id, personId:null}])}));
+  });
+}
+function removePositionFromService(serviceId, positionId){
+  withState(next => { next.services = state.services.map(sv => sv.id!==serviceId ? sv : Object.assign({}, sv, {positions: sv.positions.filter(p => p.id!==positionId)})); });
+}
+function setServiceTime(time){ withState(next => { next.serviceTime = time; }); }
+function addPerson(name, roleIds){
+  if (!name || !name.trim()) return;
+  withState(next => { next.people = state.people.concat([{id: uid('person'), name: name.trim(), roles: roleIds.slice(), active:true}]); });
+}
+function removePerson(id){
+  withState(next => {
+    next.people = state.people.filter(p => p.id!==id);
+    next.services = state.services.map(sv => Object.assign({}, sv, {positions: sv.positions.map(p => p.personId===id ? Object.assign({},p,{personId:null}) : p)}));
+  });
+}
+function togglePersonRole(personId, roleId){
+  withState(next => { next.people = state.people.map(p => { if (p.id!==personId) return p; const has = p.roles.includes(roleId); return Object.assign({}, p, {roles: has ? p.roles.filter(r=>r!==roleId) : p.roles.concat([roleId])}); }); });
+}
+function togglePersonActive(personId){ withState(next => { next.people = state.people.map(p => p.id===personId ? Object.assign({},p,{active:!p.active}) : p); }); }
+function addCatalogRole(name){ if (!name || !name.trim()) return; withState(next => { next.roles = state.roles.concat([{id: uid('role'), name: name.trim()}]); }); }
+function renameRole(roleId, name){ withState(next => { next.roles = state.roles.map(r => r.id===roleId ? Object.assign({},r,{name}) : r); }); }
+function removeRoleEverywhere(roleId){
+  withState(next => {
+    next.roles = state.roles.filter(r => r.id!==roleId);
+    next.people = state.people.map(p => Object.assign({}, p, {roles: p.roles.filter(r=>r!==roleId)}));
+    next.services = state.services.map(sv => Object.assign({}, sv, {positions: sv.positions.filter(p=>p.roleId!==roleId)}));
+  });
+}
+
+/* ================= render: root ================= */
+function render(){
+  const root = document.getElementById('root');
+  root.innerHTML = '';
+  if (!loaded){ root.appendChild(h('div', {class:'wtp-loading', text:'Завантаження…'})); return; }
+  root.appendChild(canEdit ? renderAdmin() : renderPublicView());
+}
+
+function renderAdmin(){
+  const page = h('div', {class:'wtp-page'});
+  page.appendChild(h('header', {class:'wtp-header'}, [
+    h('div', {}, [ h('h1', {text:'Графік служінь'}), h('p', {class:'wtp-subtitle', text:'Хто грає, коли і як часто'}) ]),
+    h('div', {class:'wtp-quickstats'}, [
+      h('div', {class:'wtp-quickstat'}, [ h('span',{class:'wtp-qs-num', text:String(state.services.length)}), h('span',{class:'wtp-qs-label', text:'неділь у графіку'}) ]),
+      h('div', {class:'wtp-quickstat'}, [ h('span',{class:'wtp-qs-num', text:String(state.people.filter(p=>p.active).length)}), h('span',{class:'wtp-qs-label', text:'учасників команди'}) ])
+    ])
+  ]));
+  page.appendChild(h('button', {class:'wtp-link-btn', style:'margin-bottom:1rem;', onclick: lockAgain, text:'Вийти з режиму редагування'}));
+  page.appendChild(h('nav', {class:'wtp-tabs'}, [
+    h('button', {class:'wtp-tab'+(uiTab==='schedule'?' active':''), onclick:()=>{uiTab='schedule'; try{sessionStorage.setItem('wtp-tab',uiTab);}catch(e){} render();}, text:'Розклад'}),
+    h('button', {class:'wtp-tab'+(uiTab==='team'?' active':''), onclick:()=>{uiTab='team'; try{sessionStorage.setItem('wtp-tab',uiTab);}catch(e){} render();}, text:'Команда'}),
+    h('button', {class:'wtp-tab'+(uiTab==='load'?' active':''), onclick:()=>{uiTab='load'; try{sessionStorage.setItem('wtp-tab',uiTab);}catch(e){} render();}, text:'Навантаженість'})
+  ]));
+  if (uiTab==='schedule') page.appendChild(renderScheduleTab());
+  else if (uiTab==='team') page.appendChild(renderTeamTab());
+  else page.appendChild(renderLoadTab());
+  return page;
+}
+
+function renderScheduleTab(){
+  const section = h('section', {});
+  let customDateVal = '';
+  const dateInput = h('input', {type:'date', class:'wtp-input'});
+  dateInput.addEventListener('input', e => customDateVal = e.target.value);
+  section.appendChild(h('div', {class:'wtp-toolbar'}, [
+    h('button', {class:'wtp-btn wtp-btn-primary', onclick:()=>addNextSunday(), text:'+ Додати наступну неділю'}),
+    h('div', {class:'wtp-inline-add'}, [ dateInput, h('button', {class:'wtp-btn', onclick:()=>{ if (customDateVal) addService(parseISO(customDateVal)); }, text:'Додати дату'}) ]),
+    h('div', {class:'wtp-inline-add'}, [ h('label',{class:'wtp-hint', text:'Час початку:'}), h('input', {type:'time', class:'wtp-input', value: state.serviceTime, onchange:e=>setServiceTime(e.target.value)}) ])
+  ]));
+
+  if (state.people.length===0) section.appendChild(h('p', {class:'wtp-hint', text:'Спочатку додайте учасників команди на вкладці «Команда» — тоді зʼявляться варіанти для призначення.'}));
+
+  const services = sortedServices();
+  if (services.length===0){ section.appendChild(h('p', {class:'wtp-hint', text:'Ще немає жодної запланованої неділі. Додайте першу вище.'})); return section; }
+
+  const list = h('div', {class:'wtp-service-list'});
+  const today = todayISO();
+  services.forEach(sv => {
+    const d = formatShort(sv.date);
+    const isPast = sv.date < today;
+    const counts = {};
+    sv.positions.forEach(p => { if (p.personId) counts[p.personId] = (counts[p.personId]||0)+1; });
+
+    const noteInput = h('input', {class:'wtp-note-input', placeholder:"нотатка про цю неділю (необов'язково)", value: sv.note});
+    noteInput.addEventListener('blur', e => { if (e.target.value !== sv.note) setNote(sv.id, e.target.value); });
+
+    const card = h('div', {class:'wtp-card'+(isPast?' past':'')}, [
+      h('div', {class:'wtp-card-head'}, [
+        h('div', {class:'wtp-date-badge'}, [ h('span',{class:'wtp-date-dow', text:'НД'}), h('span',{class:'wtp-date-day', text:String(d.day)}) ]),
+        h('div', {class:'wtp-card-head-text'}, [ h('div', {class:'wtp-date-full', text: formatLong(sv.date)}), noteInput ]),
+        h('button', {class:'wtp-icon-btn', title:'Видалити цю неділю', onclick:()=>removeService(sv.id), text:'×'})
+      ])
+    ]);
+
+    const posList = h('div', {class:'wtp-position-list'});
+    if (sv.positions.length===0) posList.appendChild(h('p', {class:'wtp-hint', style:'margin:.5rem 0'}, 'Немає жодної позиції — додайте нижче.'));
+    sv.positions.forEach(pos => {
+      const assigned = pos.personId || '';
+      const isConflict = !!(assigned && counts[assigned] > 1);
+      const eligible = state.people.filter(p => p.roles.includes(pos.roleId) && (p.active || p.id===assigned));
+      const others = state.people.filter(p => !p.roles.includes(pos.roleId) && p.id!==assigned && p.active);
+
+      const select = h('select', {class:'wtp-select'});
+      select.appendChild(h('option', {value:''}, '— вільно —'));
+      eligible.forEach(p => select.appendChild(h('option', {value:p.id}, p.name + (!p.active ? ' (неактивний)' : ''))));
+      if (others.length>0){ const grp=document.createElement('optgroup'); grp.label='інші учасники'; others.forEach(p=>grp.appendChild(h('option',{value:p.id},p.name))); select.appendChild(grp); }
+      select.value = assigned;
+      select.addEventListener('change', e => setAssignment(sv.id, pos.id, e.target.value));
+
+      const row = h('div', {class:'wtp-position-row'+(isConflict?' conflict':'')}, [ h('span', {class:'wtp-position-name', text: roleName(pos.roleId)}), select ]);
+      if (isConflict) row.appendChild(h('span', {class:'wtp-conflict-note', text:'також грає цього дня'}));
+      if (assigned){
+        const person = state.people.find(p => p.id===assigned);
+        if (person){
+          const links = calendarLinks(sv.date, state.serviceTime, 2, 'Прославлення: '+roleName(pos.roleId), person.name+' — '+roleName(pos.roleId));
+          row.appendChild(h('span', {class:'wtp-cal-links'}, [
+            h('a', {href:links.google, target:'_blank', rel:'noopener', class:'wtp-cal-link', text:'Google'}),
+            h('a', {href:links.outlook, target:'_blank', rel:'noopener', class:'wtp-cal-link', text:'Outlook'})
+          ]));
+        }
+      }
+      row.appendChild(h('button', {class:'wtp-dup-btn', title:'Продублювати цю позицію ще раз на цю неділю', onclick:()=>duplicatePosition(sv.id, pos.id), text:'Дублювати'}));
+      row.appendChild(h('button', {class:'wtp-icon-btn', title:'Прибрати цю позицію на цю неділю', onclick:()=>removePositionFromService(sv.id, pos.id), text:'×'}));
+      posList.appendChild(row);
+    });
+    card.appendChild(posList);
+
+    const addWrap = h('div', {class:'wtp-add-position'});
+    if (state.roles.length>0){
+      const addSelect = h('select', {class:'wtp-select wtp-select-add'});
+      addSelect.appendChild(h('option', {value:''}, '+ додати роль (можна ще раз ту саму)…'));
+      state.roles.forEach(r => addSelect.appendChild(h('option', {value:r.id}, r.name)));
+      addSelect.addEventListener('change', e => { if (e.target.value) addExistingPosition(sv.id, e.target.value); });
+      addWrap.appendChild(addSelect);
+    }
+    let customPosVal = '';
+    const customPosInput = h('input', {class:'wtp-input', placeholder:'або нова позиція для цієї неділі'});
+    customPosInput.addEventListener('input', e => customPosVal = e.target.value);
+    customPosInput.addEventListener('keydown', e => { if (e.key==='Enter' && customPosVal.trim()){ addCustomPosition(sv.id, customPosVal); customPosVal=''; } });
+    addWrap.appendChild(customPosInput);
+    addWrap.appendChild(h('button', {class:'wtp-btn', onclick:()=>{ if (customPosVal.trim()){ addCustomPosition(sv.id, customPosVal); customPosVal=''; } }, text:'Додати'}));
+    card.appendChild(addWrap);
+    list.appendChild(card);
+  });
+  section.appendChild(list);
+  return section;
+}
+
+function renderTeamTab(){
+  const section = h('section', {class:'wtp-two-col'});
+  const left = h('div', {});
+  left.appendChild(h('h2', {class:'wtp-h2', text:'Учасники'}));
+
+  let newName = ''; let newRoleIds = [];
+  const nameInput = h('input', {class:'wtp-input', placeholder:"Імʼя учасника"});
+  nameInput.addEventListener('input', e => newName = e.target.value);
+  function submitPerson(){ addPerson(newName, newRoleIds); newName=''; newRoleIds=[]; }
+  nameInput.addEventListener('keydown', e => { if (e.key==='Enter') submitPerson(); });
+  const chipRow = h('div', {class:'wtp-chip-row'});
+  state.roles.forEach(r => {
+    const chip = h('button', {type:'button', class:'wtp-chip', text:r.name});
+    chip.addEventListener('click', () => { const idx=newRoleIds.indexOf(r.id); if (idx===-1){newRoleIds.push(r.id); chip.classList.add('on');} else {newRoleIds.splice(idx,1); chip.classList.remove('on');} });
+    chipRow.appendChild(chip);
+  });
+  left.appendChild(h('div', {class:'wtp-add-person'}, [ nameInput, chipRow, h('button', {class:'wtp-btn wtp-btn-primary', onclick:()=>submitPerson(), text:'Додати учасника'}) ]));
+
+  if (state.people.length===0){
+    left.appendChild(h('p', {class:'wtp-hint', text:'Команда поки порожня. Додайте першого учасника вище.'}));
+  } else {
+    const ul = h('ul', {class:'wtp-person-list'});
+    state.people.forEach(p => {
+      const prow = h('div', {class:'wtp-chip-row'});
+      state.roles.forEach(r => prow.appendChild(h('button', {type:'button', class:'wtp-chip wtp-chip-sm'+(p.roles.includes(r.id)?' on':''), text:r.name, onclick:()=>togglePersonRole(p.id, r.id)})));
+      const cb = h('input', {type:'checkbox'}); cb.checked = p.active; cb.addEventListener('change', ()=>togglePersonActive(p.id));
+      const toggleLabel = h('label', {class:'wtp-toggle-label'}, [cb, document.createTextNode('активний(-а)')]);
+      ul.appendChild(h('li', {class:'wtp-person-row'+(p.active?'':' inactive')}, [
+        h('div', {class:'wtp-person-main'}, [ h('span',{class:'wtp-person-name', text:p.name}), prow ]),
+        h('div', {class:'wtp-person-actions'}, [ toggleLabel, h('button', {class:'wtp-icon-btn', title:'Видалити учасника', onclick:()=>removePerson(p.id), text:'×'}) ])
+      ]));
+    });
+    left.appendChild(ul);
+  }
+  section.appendChild(left);
+
+  const right = h('div', {});
+  right.appendChild(h('h2', {class:'wtp-h2', text:'Каталог ролей / інструментів'}));
+  right.appendChild(h('p', {class:'wtp-hint', style:'margin-bottom:.75rem'}, 'Це загальний перелік — з нього ви обираєте позиції для кожної конкретної неділі на вкладці «Розклад».'));
+  let newRoleName = '';
+  const roleNameInput = h('input', {class:'wtp-input', placeholder:'Назва ролі, напр. Перкусія'});
+  roleNameInput.addEventListener('input', e => newRoleName = e.target.value);
+  function submitRole(){ addCatalogRole(newRoleName); newRoleName=''; }
+  roleNameInput.addEventListener('keydown', e => { if (e.key==='Enter') submitRole(); });
+  right.appendChild(h('div', {class:'wtp-add-role'}, [ roleNameInput, h('button', {class:'wtp-btn', onclick:()=>submitRole(), text:'Додати роль'}) ]));
+  const rl = h('ul', {class:'wtp-role-list'});
+  state.roles.forEach(r => {
+    const nameField = h('input', {class:'wtp-role-name-input', value:r.name});
+    nameField.addEventListener('blur', e => { if (e.target.value !== r.name) renameRole(r.id, e.target.value); });
+    rl.appendChild(h('li', {class:'wtp-role-row'}, [ nameField, h('button', {class:'wtp-icon-btn', title:'Видалити роль всюди', onclick:()=>removeRoleEverywhere(r.id), text:'×'}) ]));
+  });
+  right.appendChild(rl);
+  section.appendChild(right);
+  return section;
+}
+
+function renderLoadTab(){
+  const section = h('section', {});
+  section.appendChild(h('div', {class:'wtp-toolbar'}, [
+    h('button', {class:'wtp-btn'+(loadSortKey==='total'?' wtp-btn-active':''), onclick:()=>{loadSortKey='total'; render();}, text:'За навантаженням'}),
+    h('button', {class:'wtp-btn'+(loadSortKey==='name'?' wtp-btn-active':''), onclick:()=>{loadSortKey='name'; render();}, text:'За іменем'})
+  ]));
+  const stats = computeStats();
+  const sorted = stats.slice();
+  if (loadSortKey==='total') sorted.sort((a,b)=>b.total-a.total); else sorted.sort((a,b)=>a.name.localeCompare(b.name,'uk'));
+  if (sorted.length===0){ section.appendChild(h('p', {class:'wtp-hint', text:'Додайте учасників команди, щоб побачити статистику навантаженості.'})); return section; }
+  const maxTotal = Math.max(1, ...sorted.map(s=>s.total));
+  const today = todayISO();
+  const list = h('div', {class:'wtp-load-list'});
+  sorted.forEach(p => {
+    const daysAgo = p.lastDate ? Math.round((parseISO(today)-parseISO(p.lastDate))/86400000) : null;
+    const row = h('div', {class:'wtp-load-row'+(p.active?'':' inactive')}, [
+      h('div', {class:'wtp-load-top'}, [ h('span',{class:'wtp-person-name', text:p.name}), h('span',{class:'wtp-load-count', text:p.total+' '+declineSluzhinnia(p.total)}) ]),
+      h('div', {class:'wtp-bar-track'}, [ h('div', {class:'wtp-bar-fill', style:'width:'+((p.total/maxTotal)*100)+'%'}) ]),
+      h('div', {class:'wtp-load-meta'}, [
+        h('span', {text:'відіграно: '+p.past}), h('span', {text:'заплановано: '+p.upcoming}),
+        h('span', {text:'востаннє: '+(p.lastDate ? (formatLong(p.lastDate)+' ('+(daysAgo===0?'сьогодні':daysAgo+' дн. тому')+')') : 'ще не грав(-ла)')})
+      ])
+    ]);
+    if (Object.keys(p.byRole).length>0){
+      const chipRow = h('div', {class:'wtp-chip-row'});
+      Object.keys(p.byRole).forEach(roleId => chipRow.appendChild(h('span', {class:'wtp-chip wtp-chip-sm wtp-chip-static', text: roleName(roleId)+': '+p.byRole[roleId]})));
+      row.appendChild(chipRow);
+    }
+    if (p.upcomingList.length>0){
+      const details = document.createElement('details'); details.className='wtp-upcoming-details';
+      const summary = document.createElement('summary'); summary.textContent = 'Показати заплановані дати ('+p.upcomingList.length+')';
+      details.appendChild(summary);
+      const ulU = h('ul', {class:'wtp-upcoming-list'});
+      p.upcomingList.forEach(item => {
+        const links = calendarLinks(item.date, state.serviceTime, 2, 'Прославлення: '+roleName(item.roleId), p.name+' — '+roleName(item.roleId));
+        ulU.appendChild(h('li', {class:'wtp-upcoming-item'}, [
+          h('span', {text: formatLong(item.date)+' — '+roleName(item.roleId)}),
+          h('span', {class:'wtp-cal-links'}, [ h('a',{href:links.google,target:'_blank',rel:'noopener',class:'wtp-cal-link',text:'Google'}), h('a',{href:links.outlook,target:'_blank',rel:'noopener',class:'wtp-cal-link',text:'Outlook'}) ])
+        ]));
+      });
+      details.appendChild(ulU);
+      row.appendChild(details);
+    }
+    list.appendChild(row);
+  });
+  section.appendChild(list);
+  return section;
+}
+
+function renderPublicView(){
+  const page = h('div', {class:'wtp-page'});
+  page.appendChild(h('header', {class:'wtp-header'}, [ h('div', {}, [ h('h1', {text:'Графік служінь'}), h('p', {class:'wtp-subtitle', text:'Перегляньте свою чергу на прославлення'}) ]) ]));
+  page.appendChild(h('p', {class:'wtp-hint', text:'Цей перегляд лише для читання — змінювати розклад може адміністратор команди.'}));
+
+  const activePeople = state.people.filter(p=>p.active);
+  const select = h('select', {class:'wtp-select wtp-my-select'});
+  select.appendChild(h('option', {value:''}, "Оберіть своє імʼя…"));
+  activePeople.forEach(p => select.appendChild(h('option', {value:p.id}, p.name)));
+  select.value = myPersonId;
+  select.addEventListener('change', e => { myPersonId = e.target.value; try{localStorage.setItem('wtp-my-id', myPersonId);}catch(err){} render(); });
+  page.appendChild(h('div', {class:'wtp-my-select-wrap'}, [ h('label',{class:'wtp-hint', text:'Я:'}), select ]));
+
+  if (!myPersonId){ page.appendChild(h('p', {class:'wtp-hint', text:'Оберіть себе зі списку вище, щоб побачити свій розклад.'})); appendFooter(page); return page; }
+  const person = state.people.find(p=>p.id===myPersonId);
+  if (!person){ page.appendChild(h('p', {class:'wtp-hint', text:'Учасника не знайдено — можливо, адміністратор оновив список.'})); appendFooter(page); return page; }
+
+  const myStats = computeStats().find(s=>s.id===myPersonId);
+  page.appendChild(h('div', {class:'wtp-quickstats wtp-public-stats'}, [
+    h('div', {class:'wtp-quickstat'}, [ h('span',{class:'wtp-qs-num', text:String(myStats?myStats.upcoming:0)}), h('span',{class:'wtp-qs-label', text:'заплановано'}) ]),
+    h('div', {class:'wtp-quickstat'}, [ h('span',{class:'wtp-qs-num', text:String(myStats?myStats.past:0)}), h('span',{class:'wtp-qs-label', text:'відіграно'}) ])
+  ]));
+
+  const today = todayISO();
+  const upcoming = [];
+  state.services.forEach(sv => {
+    if (sv.date < today) return;
+    const mine = sv.positions.filter(pos => pos.personId===myPersonId);
+    if (mine.length===0) return;
+    const others = sv.positions.filter(pos => pos.personId && pos.personId!==myPersonId).map(pos => { const op = state.people.find(p=>p.id===pos.personId); return op ? (op.name+' — '+roleName(pos.roleId)) : null; }).filter(Boolean);
+    upcoming.push({service: sv, mine, others});
+  });
+  upcoming.sort((a,b) => a.service.date < b.service.date ? -1 : (a.service.date > b.service.date ? 1 : 0));
+
+  if (upcoming.length===0){ page.appendChild(h('p', {class:'wtp-hint', text:'Найближчим часом ви не заплановані на служіння.'})); appendFooter(page); return page; }
+
+  const list = h('div', {class:'wtp-service-list'});
+  upcoming.forEach(item => {
+    const sv = item.service;
+    const d = formatShort(sv.date);
+    const headText = h('div', {class:'wtp-card-head-text'}, [ h('div',{class:'wtp-date-full', text: formatLong(sv.date)}) ]);
+    if (sv.note) headText.appendChild(h('div', {class:'wtp-public-note', text: sv.note}));
+    const card = h('div', {class:'wtp-card'}, [ h('div', {class:'wtp-card-head'}, [ h('div', {class:'wtp-date-badge'}, [ h('span',{class:'wtp-date-dow', text:'НД'}), h('span',{class:'wtp-date-day', text:String(d.day)}) ]), headText ]) ]);
+    const roleLine = h('div', {class:'wtp-position-list'});
+    item.mine.forEach(pos => {
+      const links = calendarLinks(sv.date, state.serviceTime, 2, 'Прославлення: '+roleName(pos.roleId), person.name+' — '+roleName(pos.roleId));
+      roleLine.appendChild(h('div', {class:'wtp-position-row'}, [
+        h('span', {class:'wtp-position-name', text: roleName(pos.roleId)}),
+        h('span', {class:'wtp-cal-links'}, [ h('a',{href:links.google,target:'_blank',rel:'noopener',class:'wtp-cal-link',text:'+ Google Calendar'}), h('a',{href:links.outlook,target:'_blank',rel:'noopener',class:'wtp-cal-link',text:'+ Outlook'}) ])
+      ]));
+    });
+    card.appendChild(roleLine);
+    if (item.others.length>0) card.appendChild(h('p', {class:'wtp-coserve', text:'Разом з вами: '+item.others.join(', ')}));
+    list.appendChild(card);
+  });
+  page.appendChild(list);
+  appendFooter(page);
+  return page;
+}
+
+function appendFooter(page){
+  page.appendChild(h('div', {class:'wtp-footer'}, [
+    h('button', {class:'wtp-link-btn', onclick: () => { const code = prompt('Введіть код доступу адміністратора:'); if (code) tryUnlock(code); }, text:'Я адміністратор →'})
+  ]));
+}
+
+render();
+</script>
+</body>
+</html>
