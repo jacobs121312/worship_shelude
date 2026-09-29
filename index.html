@@ -597,14 +597,21 @@ function renderLeaderPick(sv){
   sv.positions.forEach(pos => { if (pos.personId && !inTeam.includes(pos.personId)) inTeam.push(pos.personId); });
   const select = h('select', {class:'wtp-select'});
   select.appendChild(h('option', {value:''}, '— не призначено —'));
-  inTeam.forEach(id => { const p = state.people.find(x => x.id===id); if (p) select.appendChild(h('option', {value:id}, p.name)); });
-  if (sv.leaderId && !inTeam.includes(sv.leaderId)){
-    const p = state.people.find(x => x.id===sv.leaderId);
-    if (p) select.appendChild(h('option', {value:p.id}, p.name+' (не в складі)'));
+  const teamPeople = inTeam.map(id => state.people.find(x => x.id===id)).filter(Boolean);
+  const otherPeople = state.people.filter(p => !inTeam.includes(p.id) && (p.active || p.id===sv.leaderId)).sort((a,b) => a.name.localeCompare(b.name,'uk'));
+  function group(label, people){
+    if (!people.length) return;
+    const grp = document.createElement('optgroup'); grp.label = label;
+    people.forEach(p => grp.appendChild(h('option', {value:p.id}, p.name)));
+    select.appendChild(grp);
   }
+  group('У складі цієї неділі', teamPeople);
+  group(teamPeople.length ? 'Інші учасники' : 'Усі учасники', otherPeople);
   select.value = sv.leaderId || '';
   select.addEventListener('change', e => setLeader(sv.id, e.target.value));
-  return h('div', {class:'wtp-leader-pick'}, [ h('label', {text:'★ Відповідальний:'}), select ]);
+  const pick = h('div', {class:'wtp-leader-pick'}, [ h('label', {text:'★ Відповідальний:'}), select ]);
+  if (sv.leaderId && !inTeam.includes(sv.leaderId)) pick.appendChild(h('span', {class:'wtp-hint', style:'font-size:.75rem', text:'не в складі цієї неділі'}));
+  return pick;
 }
 
 function renderTeamTab(){
