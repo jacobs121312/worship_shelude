@@ -80,6 +80,10 @@ body { color: var(--ink); font-family: var(--font-sans); -webkit-font-smoothing:
 .wtp-select-add { flex: 0 0 auto; max-width: 240px; color: var(--ink-soft); }
 .wtp-add-position { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-top: .5rem; padding-top: .85rem; border-top: 1px solid var(--line); }
 .wtp-add-position .wtp-input { flex: 1; min-width: 160px; }
+.wtp-guest-badge { font-size: .68rem; font-weight: 600; color: var(--ink-soft); background: var(--surface-2); padding: .18rem .5rem; border-radius: 980px; white-space: nowrap; }
+.wtp-guest-input { font-style: italic; }
+.wtp-add-guest-label { font-size: .8rem; font-weight: 600; color: var(--ink-soft); flex-basis: 100%; }
+.wtp-add-guest { border-top: none; padding-top: .25rem; }
 .wtp-icon-btn { background: none; border: none; cursor: pointer; font-size: 1.2rem; color: var(--ink-soft); line-height: 1; width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; display:inline-flex; align-items:center; justify-content:center; }
 .wtp-icon-btn:hover { color: var(--red); background: var(--red-tint); }
 .wtp-dup-btn { background: var(--surface-2); border: none; border-radius: 980px; cursor: pointer; font-size: .72rem; font-weight: 600; color: var(--ink-soft); padding: .35rem .65rem; flex-shrink: 0; white-space: nowrap; }
@@ -270,7 +274,7 @@ function normalizeState(raw){
   const roleIds = new Set(raw.roles.map(r => r.id));
   const services = raw.services.map(sv => ({
     id: sv.id || uid('svc'), date: sv.date, note: sv.note || '', leaderId: sv.leaderId || null,
-    positions: Array.isArray(sv.positions) ? sv.positions.filter(p => roleIds.has(p.roleId)).map(p => ({id: p.id || uid('pos'), roleId: p.roleId, personId: p.personId || null})) : []
+    positions: Array.isArray(sv.positions) ? sv.positions.filter(p => roleIds.has(p.roleId)).map(p => ({id: p.id || uid('pos'), roleId: p.roleId, personId: p.personId || null, guestName: p.guestName || null})) : []
   }));
   const people = Array.isArray(raw.people) ? raw.people.map(p => ({id: p.id || uid('person'), name: p.name || '', roles: Array.isArray(p.roles) ? p.roles : [], active: p.active !== false})) : [];
   return { roles: raw.roles, people, services, serviceTime: raw.serviceTime || '09:30', teamSeeded: !!raw.teamSeeded };
@@ -417,7 +421,15 @@ function addNextSunday(){
 function removeService(id){ withState(next => { next.services = state.services.filter(s => s.id!==id); }); }
 function setNote(id, note){ withState(next => { next.services = state.services.map(s => s.id===id ? Object.assign({},s,{note}) : s); }); }
 function setAssignment(serviceId, positionId, personId){
-  withState(next => { next.services = state.services.map(sv => sv.id!==serviceId ? sv : Object.assign({}, sv, {positions: sv.positions.map(p => p.id===positionId ? Object.assign({},p,{personId: personId||null}) : p)})); });
+  withState(next => { next.services = state.services.map(sv => sv.id!==serviceId ? sv : Object.assign({}, sv, {positions: sv.positions.map(p => p.id===positionId ? Object.assign({},p,{personId: personId||null, guestName: null}) : p)})); });
+}
+function setGuest(serviceId, positionId, guestName){
+  if (!guestName || !guestName.trim()) return;
+  withState(next => { next.services = state.services.map(sv => sv.id!==serviceId ? sv : Object.assign({}, sv, {positions: sv.positions.map(p => p.id===positionId ? Object.assign({},p,{personId: null, guestName: guestName.trim()}) : p)})); });
+}
+function addGuestPosition(serviceId, roleId, guestName){
+  if (!roleId || !guestName || !guestName.trim()) return;
+  withState(next => { next.services = state.services.map(sv => sv.id!==serviceId ? sv : Object.assign({}, sv, {positions: sv.positions.concat([{id: uid('pos'), roleId, personId: null, guestName: guestName.trim()}])})); });
 }
 function addExistingPosition(serviceId, roleId){
   withState(next => { next.services = state.services.map(sv => sv.id!==serviceId ? sv : Object.assign({}, sv, {positions: sv.positions.concat([{id: uid('pos'), roleId, personId:null}])})); });
@@ -546,10 +558,25 @@ function renderScheduleTab(){
       select.appendChild(h('option', {value:''}, '— вільно —'));
       eligible.forEach(p => select.appendChild(h('option', {value:p.id}, p.name + (!p.active ? ' (неактивний)' : ''))));
       if (others.length>0){ const grp=document.createElement('optgroup'); grp.label='інші учасники'; others.forEach(p=>grp.appendChild(h('option',{value:p.id},p.name))); select.appendChild(grp); }
+      select.appendChild(h('option', {value:'__guest'}, '✎ Волонтер не з команди…'));
       select.value = assigned;
-      select.addEventListener('change', e => setAssignment(sv.id, pos.id, e.target.value));
+      select.addEventListener('change', e => {
+        if (e.target.value !== '__guest') { setAssignment(sv.id, pos.id, e.target.value); return; }
+        const name = prompt('Імʼя та прізвище волонтера:');
+        if (name && name.trim()) setGuest(sv.id, pos.id, name); else e.target.value = assigned;
+      });
 
-      const row = h('div', {class:'wtp-position-row'+(isConflict?' conflict':'')}, [ h('span', {class:'wtp-position-name', text: roleName(pos.roleId)}), select ]);
+      let field = select;
+      if (pos.guestName){
+        field = h('input', {class:'wtp-select wtp-guest-input', value: pos.guestName, 'aria-label':'Імʼя волонтера'});
+        field.addEventListener('blur', e => { const v = e.target.value.trim(); if (!v) e.target.value = pos.guestName; else if (v !== pos.guestName) setGuest(sv.id, pos.id, v); });
+        field.addEventListener('keydown', e => { if (e.key==='Enter') e.target.blur(); });
+      }
+      const row = h('div', {class:'wtp-position-row'+(isConflict?' conflict':'')}, [ h('span', {class:'wtp-position-name', text: roleName(pos.roleId)}), field ]);
+      if (pos.guestName){
+        row.appendChild(h('span', {class:'wtp-guest-badge', text:'волонтер'}));
+        row.appendChild(h('button', {class:'wtp-dup-btn', title:'Прибрати волонтера і обрати когось з команди', onclick:()=>setAssignment(sv.id, pos.id, ''), text:'З команди'}));
+      }
       if (assigned){
         const isLead = sv.leaderId===assigned;
         row.appendChild(h('button', {class:'wtp-leader-btn'+(isLead?' on':''), title: isLead ? 'Зняти статус «відповідальний»' : 'Призначити відповідальним за цю неділю', onclick:()=>setLeader(sv.id, isLead ? null : assigned), text: isLead ? '★' : '☆'}));
@@ -586,6 +613,24 @@ function renderScheduleTab(){
     addWrap.appendChild(customPosInput);
     addWrap.appendChild(h('button', {class:'wtp-btn', onclick:()=>{ if (customPosVal.trim()){ addCustomPosition(sv.id, customPosVal); customPosVal=''; } }, text:'Додати'}));
     card.appendChild(addWrap);
+
+    if (state.roles.length>0){
+      const guestName = h('input', {class:'wtp-input', placeholder:'Імʼя та прізвище'});
+      const guestRole = h('select', {class:'wtp-select wtp-select-add'});
+      guestRole.appendChild(h('option', {value:''}, 'інструмент / роль…'));
+      state.roles.forEach(r => guestRole.appendChild(h('option', {value:r.id}, r.name)));
+      const submitGuest = () => {
+        if (!guestName.value.trim()) { guestName.focus(); return; }
+        if (!guestRole.value) { guestRole.focus(); return; }
+        addGuestPosition(sv.id, guestRole.value, guestName.value);
+      };
+      guestName.addEventListener('keydown', e => { if (e.key==='Enter') submitGuest(); });
+      card.appendChild(h('div', {class:'wtp-add-position wtp-add-guest'}, [
+        h('span', {class:'wtp-add-guest-label', text:'Волонтер не з команди:'}),
+        guestName, guestRole,
+        h('button', {class:'wtp-btn', onclick: submitGuest, text:'Додати волонтера'})
+      ]));
+    }
     list.appendChild(card);
   });
   section.appendChild(list);
@@ -847,6 +892,13 @@ function renderServiceModal(person){
   if (sv.positions.length===0) list.appendChild(h('p', {class:'wtp-hint', text:'Склад на цей день ще не сформовано.'}));
   sv.positions.forEach(pos => {
     const p = pos.personId ? state.people.find(x => x.id===pos.personId) : null;
+    if (!p && pos.guestName){
+      list.appendChild(h('div', {class:'wtp-team-row'}, [
+        h('span', {class:'wtp-team-role', text: roleName(pos.roleId)}),
+        h('span', {class:'wtp-team-name'}, [ pos.guestName+' ', h('span', {class:'wtp-guest-badge', text:'волонтер'}) ])
+      ]));
+      return;
+    }
     const isMe = pos.personId===person.id;
     list.appendChild(h('div', {class:'wtp-team-row'+(isMe?' me':'')}, [
       h('span', {class:'wtp-team-role', text: roleName(pos.roleId)}),
