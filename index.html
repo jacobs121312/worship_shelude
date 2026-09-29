@@ -103,6 +103,9 @@ body { color: var(--ink); font-family: var(--font-sans); -webkit-font-smoothing:
 .wtp-person-row.inactive { opacity: .5; }
 .wtp-person-main { display: flex; flex-direction: column; gap: .45rem; flex: 1; }
 .wtp-person-name { font-weight: 600; }
+.wtp-person-name-input { font-weight: 600; font-size: 1rem; font-family: var(--font-sans); color: var(--ink); border: none; background: transparent; padding: .25rem .4rem; margin-left: -.4rem; border-radius: 8px; width: 100%; max-width: 320px; }
+.wtp-person-name-input:hover { background: var(--surface-2); }
+.wtp-person-name-input:focus { outline: none; background: var(--surface-2); box-shadow: 0 0 0 3px var(--blue-tint); }
 .wtp-person-actions { display: flex; align-items: center; gap: .6rem; white-space: nowrap; }
 .wtp-toggle-label { font-size: .75rem; color: var(--ink-soft); display: flex; align-items: center; gap: .35rem; }
 .wtp-role-row { display: flex; justify-content: space-between; align-items: center; gap: .5rem; padding: .5rem 0; border-bottom: 1px solid var(--line); }
@@ -227,7 +230,7 @@ const DEFAULT_ROLE_NAMES = [
 ];
 // Початковий склад команди — додається один раз при першому вході адміністратора
 const TEAM_SEED = [
-  "Яків Савич","Ілля Роман","Катя Деркач","Даринка","Сем Дудка","Ніка Рубіж","Олеся Токарчук","Руслан Баладін",
+  "Яків Савич","Ілля Роман","Катя Деркач","Дарина Савич","Сем Дудка","Ніка Рубіж","Олеся Токарчук","Руслан Баладін",
   "Настя Резніченко","Давид Снід","Ігор Бондаренко","Іра Хринюк","Іра Тіщенко","Віка Дудка",
   "Настя Кузьмич","Вадим Підгорний","Христина Дудка","Юрій Танчин","Віталік Кузьма","Валерія Макарова"
 ];
@@ -455,6 +458,7 @@ function removePerson(id){
 function togglePersonRole(personId, roleId){
   withState(next => { next.people = state.people.map(p => { if (p.id!==personId) return p; const has = p.roles.includes(roleId); return Object.assign({}, p, {roles: has ? p.roles.filter(r=>r!==roleId) : p.roles.concat([roleId])}); }); });
 }
+function renamePerson(personId, name){ if (!name || !name.trim()) return; withState(next => { next.people = state.people.map(p => p.id===personId ? Object.assign({},p,{name: name.trim()}) : p); }); }
 function togglePersonActive(personId){ withState(next => { next.people = state.people.map(p => p.id===personId ? Object.assign({},p,{active:!p.active}) : p); }); }
 function addCatalogRole(name){ if (!name || !name.trim()) return; withState(next => { next.roles = state.roles.concat([{id: uid('role'), name: name.trim()}]); }); }
 function renameRole(roleId, name){ withState(next => { next.roles = state.roles.map(r => r.id===roleId ? Object.assign({},r,{name}) : r); }); }
@@ -628,10 +632,13 @@ function renderTeamTab(){
     state.people.forEach(p => {
       const prow = h('div', {class:'wtp-chip-row'});
       state.roles.forEach(r => prow.appendChild(h('button', {type:'button', class:'wtp-chip wtp-chip-sm'+(p.roles.includes(r.id)?' on':''), text:r.name, onclick:()=>togglePersonRole(p.id, r.id)})));
+      const nameField = h('input', {class:'wtp-person-name-input', value:p.name, title:'Натисніть, щоб змінити імʼя', 'aria-label':'Імʼя учасника'});
+      nameField.addEventListener('blur', e => { const v = e.target.value.trim(); if (!v) e.target.value = p.name; else if (v !== p.name) renamePerson(p.id, v); });
+      nameField.addEventListener('keydown', e => { if (e.key==='Enter') e.target.blur(); });
       const cb = h('input', {type:'checkbox'}); cb.checked = p.active; cb.addEventListener('change', ()=>togglePersonActive(p.id));
       const toggleLabel = h('label', {class:'wtp-toggle-label'}, [cb, document.createTextNode('активний(-а)')]);
       ul.appendChild(h('li', {class:'wtp-person-row'+(p.active?'':' inactive')}, [
-        h('div', {class:'wtp-person-main'}, [ h('span',{class:'wtp-person-name', text:p.name}), prow ]),
+        h('div', {class:'wtp-person-main'}, [ nameField, prow ]),
         h('div', {class:'wtp-person-actions'}, [ toggleLabel, h('button', {class:'wtp-icon-btn', title:'Видалити учасника', onclick:()=>removePerson(p.id), text:'×'}) ])
       ]));
     });
