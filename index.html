@@ -16,6 +16,8 @@
   --blue-tint: rgba(0,113,227,0.1);
   --red: #FF3B30;
   --red-tint: rgba(255,59,48,0.08);
+  --amber: #C93400;
+  --amber-tint: rgba(255,149,0,0.16);
   --line: rgba(0,0,0,0.08);
   --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
   --shadow-md: 0 2px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
@@ -25,7 +27,7 @@
   :root {
     --bg: #1C1C1E; --surface: #2C2C2E; --surface-2: #3A3A3C; --ink: #F5F5F7; --ink-soft: #98989D;
     --blue: #0A84FF; --blue-hover: #409CFF; --blue-tint: rgba(10,132,255,0.22);
-    --red: #FF453A; --red-tint: rgba(255,69,58,0.16); --line: rgba(255,255,255,0.12);
+    --red: #FF453A; --red-tint: rgba(255,69,58,0.16); --amber: #FFB340; --amber-tint: rgba(255,159,10,0.2); --line: rgba(255,255,255,0.12);
     --shadow-sm: 0 1px 2px rgba(0,0,0,0.35); --shadow-md: 0 2px 10px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.3);
   }
 }
@@ -124,6 +126,65 @@ body { color: var(--ink); font-family: var(--font-sans); -webkit-font-smoothing:
 .wtp-public-stats { margin-bottom: 1.25rem; }
 .wtp-coserve { font-size:.8rem; color: var(--ink-soft); margin: .5rem 0 0; padding: 0 .2rem; }
 .wtp-footer { margin-top: 2rem; text-align: center; }
+.wtp-leader-badge { display: inline-flex; align-items: center; gap: .2rem; font-size: .68rem; font-weight: 700; color: var(--amber); background: var(--amber-tint); padding: .18rem .5rem; border-radius: 980px; white-space: nowrap; }
+.wtp-leader-pick { display: flex; align-items: center; gap: .45rem; margin-top: .45rem; flex-wrap: wrap; }
+.wtp-leader-pick .wtp-select { flex: 0 1 240px; }
+.wtp-leader-pick label { font-size: .8rem; font-weight: 600; color: var(--amber); }
+.wtp-leader-btn { background: none; border: none; cursor: pointer; font-size: 1rem; line-height: 1; width: 26px; height: 26px; border-radius: 50%; color: var(--ink-soft); opacity: .45; flex-shrink: 0; }
+.wtp-leader-btn:hover { opacity: 1; background: var(--amber-tint); color: var(--amber); }
+.wtp-leader-btn.on { opacity: 1; color: var(--amber); }
+.wtp-modal-leader { display: flex; align-items: center; gap: .5rem; background: var(--amber-tint); border-radius: 10px; padding: .55rem .7rem; margin-bottom: .6rem; font-size: .88rem; }
+.wtp-modal-leader b { color: var(--amber); }
+.wtp-cal-event.lead { background: var(--amber); }
+.wtp-cal { background: var(--surface); border-radius: 18px; padding: 1rem 1rem 1.1rem; box-shadow: var(--shadow-md); }
+.wtp-cal-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .85rem; padding: 0 .2rem; }
+.wtp-cal-title { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
+.wtp-cal-nav { display: flex; align-items: center; gap: .3rem; }
+.wtp-cal-arrow { background: var(--surface-2); border: none; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; font-size: 1.1rem; color: var(--ink); display: inline-flex; align-items: center; justify-content: center; }
+.wtp-cal-arrow:hover { background: var(--blue-tint); color: var(--blue); }
+.wtp-cal-today-btn { padding: .4rem .85rem; font-size: .8rem; }
+.wtp-cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
+.wtp-cal-dow { text-align: right; font-size: .7rem; font-weight: 600; color: var(--ink-soft); padding: 0 .4rem .4rem; }
+.wtp-cal-dow-row { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.wtp-cal-dow.weekend { color: var(--red); }
+.wtp-cal-cell { min-height: 92px; border: 0; border-radius: 0; margin: 0; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: .3rem; display: flex; flex-direction: column; gap: 3px; min-width: 0; background: none; font-family: var(--font-sans); color: var(--ink); text-align: left; }
+.wtp-cal-cell.out { color: var(--ink-soft); opacity: .45; }
+.wtp-cal-cell.has-svc { cursor: pointer; }
+.wtp-cal-cell.has-svc:hover { background: var(--surface-2); }
+.wtp-cal-cell.mine { background: var(--blue-tint); }
+.wtp-cal-cell.mine:hover { background: var(--blue-tint); box-shadow: inset 0 0 0 2px var(--blue); }
+.wtp-cal-cell.past .wtp-cal-event { opacity: .55; }
+.wtp-cal-num { align-self: flex-end; font-size: .82rem; font-weight: 600; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; flex-shrink: 0; }
+.wtp-cal-cell.today .wtp-cal-num { background: var(--red); color: #fff; }
+.wtp-cal-event { font-size: .68rem; font-weight: 600; line-height: 1.25; padding: .15rem .35rem; border-radius: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: var(--blue); color: #fff; }
+.wtp-cal-event.other { background: var(--surface-2); color: var(--ink-soft); font-weight: 500; }
+.wtp-cal-legend { display: flex; gap: 1rem; flex-wrap: wrap; font-size: .75rem; color: var(--ink-soft); margin-top: .75rem; padding: 0 .2rem; }
+.wtp-cal-legend span { display: inline-flex; align-items: center; gap: .35rem; }
+.wtp-cal-swatch { width: 10px; height: 10px; border-radius: 3px; background: var(--blue); }
+.wtp-cal-swatch.other { background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); }
+.wtp-next-up { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; margin: 0 0 1rem; font-size: .9rem; }
+.wtp-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.35); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
+.wtp-modal { background: var(--surface); border-radius: 18px; box-shadow: 0 12px 40px rgba(0,0,0,.25); width: 100%; max-width: 440px; max-height: 85vh; overflow-y: auto; padding: 1.25rem 1.3rem; }
+.wtp-modal .wtp-card-head { margin-bottom: .5rem; }
+.wtp-modal-meta { font-size: .8rem; color: var(--ink-soft); }
+.wtp-team-row { display: flex; justify-content: space-between; align-items: baseline; gap: .75rem; padding: .55rem .6rem; border-radius: 10px; font-size: .88rem; }
+.wtp-team-row + .wtp-team-row { border-top: 1px solid var(--line); }
+.wtp-team-role { color: var(--ink-soft); }
+.wtp-team-name { font-weight: 600; text-align: right; }
+.wtp-team-name.free { font-weight: 400; color: var(--ink-soft); font-style: italic; }
+.wtp-team-row.me { background: var(--blue-tint); border-top-color: transparent; }
+.wtp-team-row.me + .wtp-team-row { border-top-color: transparent; }
+.wtp-team-row.me .wtp-team-name { color: var(--blue); }
+.wtp-modal-links { margin-top: .9rem; padding-top: .85rem; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: .5rem; }
+@media (max-width: 640px) {
+  .wtp-cal { padding: .75rem .5rem .9rem; }
+  .wtp-cal-title { font-size: 1.1rem; }
+  .wtp-cal-today-btn { padding: .35rem .65rem; }
+  .wtp-cal-cell { min-height: 58px; padding: .2rem; }
+  .wtp-cal-num { align-self: center; font-size: .78rem; }
+  .wtp-cal-event { font-size: 0; height: 5px; padding: 0; border-radius: 3px; }
+  .wtp-cal-dow { text-align: center; padding: 0 0 .4rem; }
+}
 @media (max-width: 640px) {
   .wtp-page { padding: 1.25rem; }
   .wtp-two-col { grid-template-columns: 1fr; }
@@ -164,8 +225,16 @@ const DEFAULT_ROLE_NAMES = [
   "Ведучий/ведуча прославлення","Вокал 2","Вокал 3","Гітара акустична",
   "Гітара електрична","Бас-гітара","Барабани","Клавіші","Звукооператор"
 ];
+// Початковий склад команди — додається один раз при першому вході адміністратора
+const TEAM_SEED = [
+  "Яків Савич","Ілля Роман","Катя Деркач","Даринка","Сем Дудка","Ніка Рубіж","Олеся Токарчук","Руслан Баладін",
+  "Настя Резніченко","Давид Снід","Ігор Бондаренко","Іра Хринюк","Іра Тіщенко","Віка Дудка",
+  "Настя Кузьмич","Вадим Підгорний","Христина Дудка","Юрій Танчин","Віталік Кузьма","Валерія Макарова"
+];
 const MONTHS_LONG = ["січня","лютого","березня","квітня","травня","червня","липня","серпня","вересня","жовтня","листопада","грудня"];
 const MONTHS_SHORT = ["січ","лют","бер","кві","тра","чер","лип","сер","вер","жов","лис","гру"];
+const MONTHS_NOM = ["Січень","Лютий","Березень","Квітень","Травень","Червень","Липень","Серпень","Вересень","Жовтень","Листопад","Грудень"];
+const DOW_SHORT = ["Пн","Вт","Ср","Чт","Пт","Сб","Нд"];
 
 /* ================= helpers ================= */
 let idSeed = 0;
@@ -189,19 +258,19 @@ function buildDefaultState(){
   let cursor = new Date();
   for (let i=0;i<4;i++){
     cursor = i===0 ? nextSundayAfter(new Date()) : nextSundayAfter(cursor);
-    services.push({ id: uid('svc'), date: toISO(cursor), note: '', positions: roles.map(r => ({id: uid('pos'), roleId: r.id, personId: null})) });
+    services.push({ id: uid('svc'), date: toISO(cursor), note: '', leaderId: null, positions: roles.map(r => ({id: uid('pos'), roleId: r.id, personId: null})) });
   }
-  return { roles, people: [], services, serviceTime: '09:30' };
+  return { roles, people: [], services, serviceTime: '09:30', teamSeeded: false };
 }
 function normalizeState(raw){
   if (!raw || !Array.isArray(raw.services) || !Array.isArray(raw.roles)) return buildDefaultState();
   const roleIds = new Set(raw.roles.map(r => r.id));
   const services = raw.services.map(sv => ({
-    id: sv.id || uid('svc'), date: sv.date, note: sv.note || '',
+    id: sv.id || uid('svc'), date: sv.date, note: sv.note || '', leaderId: sv.leaderId || null,
     positions: Array.isArray(sv.positions) ? sv.positions.filter(p => roleIds.has(p.roleId)).map(p => ({id: p.id || uid('pos'), roleId: p.roleId, personId: p.personId || null})) : []
   }));
   const people = Array.isArray(raw.people) ? raw.people.map(p => ({id: p.id || uid('person'), name: p.name || '', roles: Array.isArray(p.roles) ? p.roles : [], active: p.active !== false})) : [];
-  return { roles: raw.roles, people, services, serviceTime: raw.serviceTime || '09:30' };
+  return { roles: raw.roles, people, services, serviceTime: raw.serviceTime || '09:30', teamSeeded: !!raw.teamSeeded };
 }
 
 function buildEventTimes(dateISO, timeStr, durationHours){
@@ -252,6 +321,9 @@ try { uiTab = sessionStorage.getItem('wtp-tab') || 'schedule'; } catch(e){}
 let loadSortKey = 'total';
 let myPersonId = '';
 try { myPersonId = localStorage.getItem('wtp-my-id') || ''; } catch(e){}
+let calMonth = { y: new Date().getFullYear(), m: new Date().getMonth() };
+let openServiceId = null;
+document.addEventListener('keydown', e => { if (e.key==='Escape' && openServiceId){ openServiceId = null; render(); } });
 
 function sortedServices(){ return state.services.slice().sort((a,b) => a.date < b.date ? -1 : (a.date > b.date ? 1 : 0)); }
 function roleName(id){ const r = state.roles.find(x => x.id===id); return r ? r.name : '(видалена роль)'; }
@@ -290,9 +362,16 @@ function tryUnlock(code){
       editCode = code; canEdit = true;
       try { localStorage.setItem('wtp-editcode', code); } catch(e){}
       render();
+      seedTeam();
       return true;
     })
     .catch(() => { alert('Невірний код доступу.'); return false; });
+}
+function seedTeam(){
+  if (state.teamSeeded) return;
+  const existing = new Set(state.people.map(p => p.name.trim().toLowerCase()));
+  const added = TEAM_SEED.filter(name => !existing.has(name.toLowerCase())).map(name => ({id: uid('person'), name, roles: [], active: true}));
+  withState(next => { next.people = state.people.concat(added); next.teamSeeded = true; });
 }
 function lockAgain(){
   canEdit = false; editCode = '';
@@ -305,15 +384,17 @@ onSnapshot(stateDocRef, snap => {
     const data = snap.data();
     if (data && data.payload) state = normalizeState(data.payload);
   }
+  const firstLoad = !loaded;
   loaded = true;
   render();
+  // Автовхід лише після завантаження даних — інакше tryUnlock перезапише базу порожнім станом
+  if (firstLoad && editCode && !canEdit) tryUnlock(editCode);
 }, err => {
   console.error('Listen failed', err);
   loaded = true;
   render();
 });
 
-if (editCode) tryUnlock(editCode);
 
 /* ================= mutations ================= */
 function withState(mut){ const next = Object.assign({}, state); mut(next); persist(next); }
@@ -323,7 +404,7 @@ function addService(dateObj){
   const sorted = sortedServices();
   const template = sorted.length ? sorted[sorted.length-1].positions : state.roles.map(r => ({roleId: r.id}));
   const positions = template.map(p => ({id: uid('pos'), roleId: p.roleId, personId: null}));
-  withState(next => { next.services = state.services.concat([{id: uid('svc'), date, note:'', positions}]); });
+  withState(next => { next.services = state.services.concat([{id: uid('svc'), date, note:'', leaderId: null, positions}]); });
 }
 function addNextSunday(){
   const sorted = sortedServices();
@@ -359,6 +440,7 @@ function addCustomPosition(serviceId, name){
 function removePositionFromService(serviceId, positionId){
   withState(next => { next.services = state.services.map(sv => sv.id!==serviceId ? sv : Object.assign({}, sv, {positions: sv.positions.filter(p => p.id!==positionId)})); });
 }
+function setLeader(serviceId, personId){ withState(next => { next.services = state.services.map(sv => sv.id===serviceId ? Object.assign({}, sv, {leaderId: personId || null}) : sv); }); }
 function setServiceTime(time){ withState(next => { next.serviceTime = time; }); }
 function addPerson(name, roleIds){
   if (!name || !name.trim()) return;
@@ -367,7 +449,7 @@ function addPerson(name, roleIds){
 function removePerson(id){
   withState(next => {
     next.people = state.people.filter(p => p.id!==id);
-    next.services = state.services.map(sv => Object.assign({}, sv, {positions: sv.positions.map(p => p.personId===id ? Object.assign({},p,{personId:null}) : p)}));
+    next.services = state.services.map(sv => Object.assign({}, sv, {leaderId: sv.leaderId===id ? null : sv.leaderId, positions: sv.positions.map(p => p.personId===id ? Object.assign({},p,{personId:null}) : p)}));
   });
 }
 function togglePersonRole(personId, roleId){
@@ -443,7 +525,7 @@ function renderScheduleTab(){
     const card = h('div', {class:'wtp-card'+(isPast?' past':'')}, [
       h('div', {class:'wtp-card-head'}, [
         h('div', {class:'wtp-date-badge'}, [ h('span',{class:'wtp-date-dow', text:'НД'}), h('span',{class:'wtp-date-day', text:String(d.day)}) ]),
-        h('div', {class:'wtp-card-head-text'}, [ h('div', {class:'wtp-date-full', text: formatLong(sv.date)}), noteInput ]),
+        h('div', {class:'wtp-card-head-text'}, [ h('div', {class:'wtp-date-full', text: formatLong(sv.date)}), noteInput, renderLeaderPick(sv) ]),
         h('button', {class:'wtp-icon-btn', title:'Видалити цю неділю', onclick:()=>removeService(sv.id), text:'×'})
       ])
     ]);
@@ -454,7 +536,7 @@ function renderScheduleTab(){
       const assigned = pos.personId || '';
       const isConflict = !!(assigned && counts[assigned] > 1);
       const eligible = state.people.filter(p => p.roles.includes(pos.roleId) && (p.active || p.id===assigned));
-      const others = state.people.filter(p => !p.roles.includes(pos.roleId) && p.id!==assigned && p.active);
+      const others = state.people.filter(p => !p.roles.includes(pos.roleId) && (p.active || p.id===assigned));
 
       const select = h('select', {class:'wtp-select'});
       select.appendChild(h('option', {value:''}, '— вільно —'));
@@ -464,6 +546,10 @@ function renderScheduleTab(){
       select.addEventListener('change', e => setAssignment(sv.id, pos.id, e.target.value));
 
       const row = h('div', {class:'wtp-position-row'+(isConflict?' conflict':'')}, [ h('span', {class:'wtp-position-name', text: roleName(pos.roleId)}), select ]);
+      if (assigned){
+        const isLead = sv.leaderId===assigned;
+        row.appendChild(h('button', {class:'wtp-leader-btn'+(isLead?' on':''), title: isLead ? 'Зняти статус «відповідальний»' : 'Призначити відповідальним за цю неділю', onclick:()=>setLeader(sv.id, isLead ? null : assigned), text: isLead ? '★' : '☆'}));
+      }
       if (isConflict) row.appendChild(h('span', {class:'wtp-conflict-note', text:'також грає цього дня'}));
       if (assigned){
         const person = state.people.find(p => p.id===assigned);
@@ -500,6 +586,21 @@ function renderScheduleTab(){
   });
   section.appendChild(list);
   return section;
+}
+
+function renderLeaderPick(sv){
+  const inTeam = [];
+  sv.positions.forEach(pos => { if (pos.personId && !inTeam.includes(pos.personId)) inTeam.push(pos.personId); });
+  const select = h('select', {class:'wtp-select'});
+  select.appendChild(h('option', {value:''}, '— не призначено —'));
+  inTeam.forEach(id => { const p = state.people.find(x => x.id===id); if (p) select.appendChild(h('option', {value:id}, p.name)); });
+  if (sv.leaderId && !inTeam.includes(sv.leaderId)){
+    const p = state.people.find(x => x.id===sv.leaderId);
+    if (p) select.appendChild(h('option', {value:p.id}, p.name+' (не в складі)'));
+  }
+  select.value = sv.leaderId || '';
+  select.addEventListener('change', e => setLeader(sv.id, e.target.value));
+  return h('div', {class:'wtp-leader-pick'}, [ h('label', {text:'★ Відповідальний:'}), select ]);
 }
 
 function renderTeamTab(){
@@ -631,40 +732,128 @@ function renderPublicView(){
   ]));
 
   const today = todayISO();
-  const upcoming = [];
-  state.services.forEach(sv => {
-    if (sv.date < today) return;
-    const mine = sv.positions.filter(pos => pos.personId===myPersonId);
-    if (mine.length===0) return;
-    const others = sv.positions.filter(pos => pos.personId && pos.personId!==myPersonId).map(pos => { const op = state.people.find(p=>p.id===pos.personId); return op ? (op.name+' — '+roleName(pos.roleId)) : null; }).filter(Boolean);
-    upcoming.push({service: sv, mine, others});
-  });
-  upcoming.sort((a,b) => a.service.date < b.service.date ? -1 : (a.service.date > b.service.date ? 1 : 0));
+  const nextMine = sortedServices().find(sv => sv.date >= today && sv.positions.some(pos => pos.personId===myPersonId));
+  if (nextMine){
+    const nextRoles = nextMine.positions.filter(pos => pos.personId===myPersonId).map(pos => roleName(pos.roleId)).join(', ') + (nextMine.leaderId===myPersonId ? ' · ★ відповідальний' : '');
+    page.appendChild(h('div', {class:'wtp-next-up'}, [
+      h('span', {class:'wtp-hint', text:'Наступне служіння:'}),
+      h('button', {class:'wtp-cal-link', style:'border:none;cursor:pointer;font-size:.8rem;', onclick:()=>{ const d=parseISO(nextMine.date); calMonth={y:d.getFullYear(), m:d.getMonth()}; openServiceId=nextMine.id; render(); }, text: formatLong(nextMine.date)+' — '+nextRoles})
+    ]));
+  } else {
+    page.appendChild(h('p', {class:'wtp-hint', style:'margin:0 0 1rem', text:'Найближчим часом ви не заплановані на служіння.'}));
+  }
 
-  if (upcoming.length===0){ page.appendChild(h('p', {class:'wtp-hint', text:'Найближчим часом ви не заплановані на служіння.'})); appendFooter(page); return page; }
-
-  const list = h('div', {class:'wtp-service-list'});
-  upcoming.forEach(item => {
-    const sv = item.service;
-    const d = formatShort(sv.date);
-    const headText = h('div', {class:'wtp-card-head-text'}, [ h('div',{class:'wtp-date-full', text: formatLong(sv.date)}) ]);
-    if (sv.note) headText.appendChild(h('div', {class:'wtp-public-note', text: sv.note}));
-    const card = h('div', {class:'wtp-card'}, [ h('div', {class:'wtp-card-head'}, [ h('div', {class:'wtp-date-badge'}, [ h('span',{class:'wtp-date-dow', text:'НД'}), h('span',{class:'wtp-date-day', text:String(d.day)}) ]), headText ]) ]);
-    const roleLine = h('div', {class:'wtp-position-list'});
-    item.mine.forEach(pos => {
-      const links = calendarLinks(sv.date, state.serviceTime, 2, 'Прославлення: '+roleName(pos.roleId), person.name+' — '+roleName(pos.roleId));
-      roleLine.appendChild(h('div', {class:'wtp-position-row'}, [
-        h('span', {class:'wtp-position-name', text: roleName(pos.roleId)}),
-        h('span', {class:'wtp-cal-links'}, [ h('a',{href:links.google,target:'_blank',rel:'noopener',class:'wtp-cal-link',text:'+ Google Calendar'}), h('a',{href:links.outlook,target:'_blank',rel:'noopener',class:'wtp-cal-link',text:'+ Outlook'}) ])
-      ]));
-    });
-    card.appendChild(roleLine);
-    if (item.others.length>0) card.appendChild(h('p', {class:'wtp-coserve', text:'Разом з вами: '+item.others.join(', ')}));
-    list.appendChild(card);
-  });
-  page.appendChild(list);
+  page.appendChild(renderMyCalendar(person));
+  const modal = renderServiceModal(person);
+  if (modal) page.appendChild(modal);
   appendFooter(page);
   return page;
+}
+
+function renderMyCalendar(person){
+  const wrap = h('div', {class:'wtp-cal'});
+  const svcByDate = {};
+  state.services.forEach(sv => { svcByDate[sv.date] = sv; });
+  function shift(delta){
+    let m = calMonth.m + delta, y = calMonth.y;
+    if (m < 0){ m = 11; y--; } else if (m > 11){ m = 0; y++; }
+    calMonth = {y, m}; render();
+  }
+  const now = new Date();
+  wrap.appendChild(h('div', {class:'wtp-cal-head'}, [
+    h('h2', {class:'wtp-cal-title', text: MONTHS_NOM[calMonth.m]+' '+calMonth.y}),
+    h('div', {class:'wtp-cal-nav'}, [
+      h('button', {class:'wtp-cal-arrow', title:'Попередній місяць', onclick:()=>shift(-1), text:'‹'}),
+      h('button', {class:'wtp-btn wtp-cal-today-btn', onclick:()=>{ calMonth={y:now.getFullYear(), m:now.getMonth()}; render(); }, text:'Сьогодні'}),
+      h('button', {class:'wtp-cal-arrow', title:'Наступний місяць', onclick:()=>shift(1), text:'›'})
+    ])
+  ]));
+
+  const dowRow = h('div', {class:'wtp-cal-dow-row'});
+  DOW_SHORT.forEach((d, i) => dowRow.appendChild(h('div', {class:'wtp-cal-dow'+(i>=5?' weekend':''), text:d})));
+  wrap.appendChild(dowRow);
+
+  const grid = h('div', {class:'wtp-cal-grid'});
+  const first = new Date(calMonth.y, calMonth.m, 1);
+  const offset = (first.getDay() + 6) % 7;
+  const daysInMonth = new Date(calMonth.y, calMonth.m + 1, 0).getDate();
+  const totalCells = Math.ceil((offset + daysInMonth) / 7) * 7;
+  const today = todayISO();
+  for (let i = 0; i < totalCells; i++){
+    const date = new Date(calMonth.y, calMonth.m, 1 - offset + i);
+    const iso = toISO(date);
+    const sv = svcByDate[iso];
+    const mine = sv ? sv.positions.filter(pos => pos.personId===person.id) : [];
+    let cls = 'wtp-cal-cell';
+    if (date.getMonth() !== calMonth.m) cls += ' out';
+    if (iso === today) cls += ' today';
+    if (iso < today) cls += ' past';
+    if (sv) cls += ' has-svc';
+    if (mine.length || (sv && sv.leaderId===person.id)) cls += ' mine';
+    const label = sv ? formatLong(iso)+': '+(mine.length ? mine.map(pos => roleName(pos.roleId)).join(', ') : 'служіння без вас') + (sv.leaderId===person.id ? ', ви відповідальний' : '') : null;
+    const cell = h(sv ? 'button' : 'div', {class: cls, type: sv ? 'button' : null, 'aria-label': label}, [ h('span', {class:'wtp-cal-num', text:String(date.getDate())}) ]);
+    if (sv){
+      if (sv.leaderId===person.id) cell.appendChild(h('span', {class:'wtp-cal-event lead', text:'★ Відповідальний'}));
+      if (mine.length) mine.forEach(pos => cell.appendChild(h('span', {class:'wtp-cal-event', title: roleName(pos.roleId), text: roleName(pos.roleId)})));
+      else cell.appendChild(h('span', {class:'wtp-cal-event other', text:'Служіння'}));
+      cell.addEventListener('click', () => { openServiceId = sv.id; render(); });
+    }
+    grid.appendChild(cell);
+  }
+  wrap.appendChild(grid);
+  wrap.appendChild(h('div', {class:'wtp-cal-legend'}, [
+    h('span', {}, [ h('i', {class:'wtp-cal-swatch'}), 'ви служите' ]),
+    h('span', {}, [ h('i', {class:'wtp-cal-swatch other'}), 'служіння без вас' ]),
+    h('span', {text:'Натисніть на день, щоб побачити весь склад'})
+  ]));
+  return wrap;
+}
+
+function renderServiceModal(person){
+  if (!openServiceId) return null;
+  const sv = state.services.find(s => s.id===openServiceId);
+  if (!sv){ openServiceId = null; return null; }
+  const close = () => { openServiceId = null; render(); };
+  const d = parseISO(sv.date);
+  const headText = h('div', {class:'wtp-card-head-text'}, [
+    h('div', {class:'wtp-date-full', text: formatLong(sv.date)}),
+    h('div', {class:'wtp-modal-meta', text:'Початок о '+state.serviceTime})
+  ]);
+  if (sv.note) headText.appendChild(h('div', {class:'wtp-public-note', text: sv.note}));
+  const modal = h('div', {class:'wtp-modal', role:'dialog', 'aria-modal':'true'}, [
+    h('div', {class:'wtp-card-head'}, [
+      h('div', {class:'wtp-date-badge'}, [ h('span',{class:'wtp-date-dow', text: DOW_SHORT[(d.getDay()+6)%7].toUpperCase()}), h('span',{class:'wtp-date-day', text:String(d.getDate())}) ]),
+      headText,
+      h('button', {class:'wtp-icon-btn', title:'Закрити', onclick: close, text:'×'})
+    ])
+  ]);
+  const leader = sv.leaderId ? state.people.find(x => x.id===sv.leaderId) : null;
+  if (leader) modal.appendChild(h('div', {class:'wtp-modal-leader'}, [ h('span', {text:'★ Відповідальний:'}), h('b', {text: leader.name + (leader.id===person.id ? ' (ви)' : '')}) ]));
+  const list = h('div', {});
+  if (sv.positions.length===0) list.appendChild(h('p', {class:'wtp-hint', text:'Склад на цей день ще не сформовано.'}));
+  sv.positions.forEach(pos => {
+    const p = pos.personId ? state.people.find(x => x.id===pos.personId) : null;
+    const isMe = pos.personId===person.id;
+    list.appendChild(h('div', {class:'wtp-team-row'+(isMe?' me':'')}, [
+      h('span', {class:'wtp-team-role', text: roleName(pos.roleId)}),
+      h('span', {class:'wtp-team-name'+(p?'':' free')}, [ p && p.id===sv.leaderId ? h('span', {class:'wtp-leader-badge', style:'margin-right:.4rem', text:'★'}) : null, p ? (p.name + (isMe ? ' (ви)' : '')) : 'вільно' ])
+    ]));
+  });
+  modal.appendChild(list);
+
+  const mine = sv.positions.filter(pos => pos.personId===person.id);
+  if (mine.length && sv.date >= todayISO()){
+    const linksWrap = h('div', {class:'wtp-modal-links'});
+    mine.forEach(pos => {
+      const links = calendarLinks(sv.date, state.serviceTime, 2, 'Прославлення: '+roleName(pos.roleId), person.name+' — '+roleName(pos.roleId));
+      linksWrap.appendChild(h('span', {class:'wtp-cal-links'}, [
+        h('a',{href:links.google,target:'_blank',rel:'noopener',class:'wtp-cal-link',text:'+ Google Calendar'}),
+        h('a',{href:links.outlook,target:'_blank',rel:'noopener',class:'wtp-cal-link',text:'+ Outlook'})
+      ]));
+    });
+    modal.appendChild(linksWrap);
+  }
+  return h('div', {class:'wtp-modal-backdrop', onclick: e => { if (e.target===e.currentTarget) close(); }}, [modal]);
 }
 
 function appendFooter(page){
